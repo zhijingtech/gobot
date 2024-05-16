@@ -1,10 +1,11 @@
 package gobot
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
-	"gobot.io/x/gobot/gobottest"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEventerAddEvent(t *testing.T) {
@@ -14,7 +15,7 @@ func TestEventerAddEvent(t *testing.T) {
 	if _, ok := e.Events()["test"]; !ok {
 		t.Errorf("Could not add event to list of Event names")
 	}
-	gobottest.Assert(t, e.Event("test"), "test")
+	assert.Equal(t, "test", e.Event("test"))
 }
 
 func TestEventerDeleteEvent(t *testing.T) {
@@ -32,19 +33,26 @@ func TestEventerOn(t *testing.T) {
 	e.AddEvent("test")
 
 	sem := make(chan bool)
-	e.On("test", func(data interface{}) {
+	_ = e.On("test", func(data interface{}) {
 		sem <- true
 	})
 
+	fmt.Println(e.Metrics())
+
 	go func() {
 		e.Publish("test", true)
+		fmt.Println(e.Metrics())
 	}()
+
+	fmt.Println(e.Metrics())
 
 	select {
 	case <-sem:
 	case <-time.After(10 * time.Millisecond):
 		t.Errorf("On was not called")
 	}
+
+	fmt.Println(e.Metrics())
 }
 
 func TestEventerOnce(t *testing.T) {
@@ -52,9 +60,11 @@ func TestEventerOnce(t *testing.T) {
 	e.AddEvent("test")
 
 	sem := make(chan bool)
-	e.Once("test", func(data interface{}) {
+	_ = e.Once("test", func(data interface{}) {
 		sem <- true
 	})
+
+	fmt.Println(e.Metrics())
 
 	go func() {
 		e.Publish("test", true)
@@ -75,4 +85,5 @@ func TestEventerOnce(t *testing.T) {
 		t.Errorf("Once was called twice")
 	case <-time.After(10 * time.Millisecond):
 	}
+	fmt.Println(e.Metrics())
 }

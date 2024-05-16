@@ -1,6 +1,9 @@
 package gobot
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 type eventChannel chan *Event
 
@@ -14,8 +17,11 @@ type eventer struct {
 	// map of out channels used by subscribers
 	outs map[eventChannel]eventChannel
 
+	// map of event and channel
+	mapping map[eventChannel]string
+
 	// mutex to protect the eventChannel map
-	eventsMutex sync.Mutex
+	eventsMutex sync.RWMutex
 }
 
 const eventChanBufferSize = 10
@@ -46,10 +52,13 @@ type Eventer interface {
 	Unsubscribe(events eventChannel)
 
 	// Event handler
-	On(name string, f func(s interface{})) (err error)
+	On(name string, f func(s interface{})) error
 
 	// Event handler, only executes one time
-	Once(name string, f func(s interface{})) (err error)
+	Once(name string, f func(s interface{})) error
+
+	// Metrics collects all channel length
+	Metrics() map[string]int
 }
 
 // NewEventer returns a new Eventer.
@@ -58,19 +67,18 @@ func NewEventer() Eventer {
 		eventnames: make(map[string]string),
 		in:         make(eventChannel, eventChanBufferSize),
 		outs:       make(map[eventChannel]eventChannel),
+		mapping:    make(map[eventChannel]string),
 	}
 
 	// goroutine to cascade "in" events to all "out" event channels
 	go func() {
 		for {
-			select {
-			case evt := <-evtr.in:
-				evtr.eventsMutex.Lock()
-				for _, out := range evtr.outs {
-					out <- evt
-				}
-				evtr.eventsMutex.Unlock()
+			evt := <-evtr.in
+			evtr.eventsMutex.RLock()
+			for _, out := range evtr.outs {
+				out <- evt
 			}
+			evtr.eventsMutex.RUnlock()
 		}
 	}()
 
@@ -118,28 +126,33 @@ func (e *eventer) Unsubscribe(events eventChannel) {
 	e.eventsMutex.Lock()
 	defer e.eventsMutex.Unlock()
 	delete(e.outs, events)
+	delete(e.mapping, events)
 }
 
 // On executes the event handler f when e is Published to.
-func (e *eventer) On(n string, f func(s interface{})) (err error) {
+func (e *eventer) On(n string, f func(s interface{})) error {
 	out := e.Subscribe()
+	e.eventsMutex.Lock()
+	e.mapping[out] = n
+	e.eventsMutex.Unlock()
 	go func() {
 		for {
-			select {
-			case evt := <-out:
-				if evt.Name == n {
-					f(evt.Data)
-				}
+			evt := <-out
+			if evt.Name == n {
+				f(evt.Data)
 			}
 		}
 	}()
 
-	return
+	return nil
 }
 
 // Once is similar to On except that it only executes f one time.
-func (e *eventer) Once(n string, f func(s interface{})) (err error) {
+func (e *eventer) Once(n string, f func(s interface{})) error {
 	out := e.Subscribe()
+	e.eventsMutex.Lock()
+	e.mapping[out] = n
+	e.eventsMutex.Unlock()
 	go func() {
 	ProcessEvents:
 		for evt := range out {
@@ -151,5 +164,17 @@ func (e *eventer) Once(n string, f func(s interface{})) (err error) {
 		}
 	}()
 
-	return
+	return nil
+}
+
+// Metrics collects all channel length
+func (e *eventer) Metrics() map[string]int {
+	e.eventsMutex.RLock()
+	defer e.eventsMutex.RUnlock()
+	metrics := make(map[string]int)
+	metrics["in"] = len(e.in)
+	for channel, event := range e.mapping {
+		metrics[fmt.Sprintf("out_%s", event)] = len(channel)
+	}
+	return metrics
 }

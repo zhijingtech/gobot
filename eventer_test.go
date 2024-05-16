@@ -1,6 +1,7 @@
 package gobot
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -36,15 +37,22 @@ func TestEventerOn(t *testing.T) {
 		sem <- true
 	})
 
+	fmt.Println(e.Metrics())
+
 	go func() {
 		e.Publish("test", true)
+		fmt.Println(e.Metrics())
 	}()
+
+	fmt.Println(e.Metrics())
 
 	select {
 	case <-sem:
 	case <-time.After(10 * time.Millisecond):
 		t.Errorf("On was not called")
 	}
+
+	fmt.Println(e.Metrics())
 }
 
 func TestEventerOnce(t *testing.T) {
@@ -55,6 +63,8 @@ func TestEventerOnce(t *testing.T) {
 	_ = e.Once("test", func(data interface{}) {
 		sem <- true
 	})
+
+	fmt.Println(e.Metrics())
 
 	go func() {
 		e.Publish("test", true)
@@ -75,4 +85,5 @@ func TestEventerOnce(t *testing.T) {
 		t.Errorf("Once was called twice")
 	case <-time.After(10 * time.Millisecond):
 	}
+	fmt.Println(e.Metrics())
 }

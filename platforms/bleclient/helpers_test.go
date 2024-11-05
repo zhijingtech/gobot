@@ -53,13 +53,12 @@ func (bta *btTestAdapter) StopScan() error {
 	return nil
 }
 
-func (bta *btTestAdapter) Connect(_ bluetooth.Address, _ bluetooth.ConnectionParams) (*bluetooth.Device, error) {
+func (bta *btTestAdapter) Connect(addr bluetooth.Address, _ bluetooth.ConnectionParams) (bluetooth.Device, error) {
 	if bta.simulateConnectErr {
-		return nil, fmt.Errorf("adapter connect error")
+		return bluetooth.Device{}, fmt.Errorf("adapter connect error")
 	}
 
-	//nolint:nilnil // for this test we can not return a *bluetooth.Device
-	return nil, nil
+	return bluetooth.Device{Address: addr}, nil
 }
 
 type btTestPayload struct {
@@ -72,14 +71,16 @@ func (*btTestPayload) HasServiceUUID(bluetooth.UUID) bool { return true }
 
 func (*btTestPayload) Bytes() []byte { return nil }
 
-func (*btTestPayload) ManufacturerData() map[uint16][]byte { return nil }
+func (*btTestPayload) ManufacturerData() []bluetooth.ManufacturerDataElement { return nil }
+
+func (*btTestPayload) ServiceData() []bluetooth.ServiceDataElement { return nil }
 
 type btTestDevice struct {
 	simulateDiscoverServicesErr bool
 	simulateDisconnectErr       bool
 }
 
-func (btd *btTestDevice) DiscoverServices(_ []bluetooth.UUID) ([]bluetooth.DeviceService, error) {
+func (btd btTestDevice) DiscoverServices(_ []bluetooth.UUID) ([]bluetooth.DeviceService, error) {
 	if btd.simulateDiscoverServicesErr {
 		return nil, fmt.Errorf("device discover services error")
 	}
@@ -88,7 +89,7 @@ func (btd *btTestDevice) DiscoverServices(_ []bluetooth.UUID) ([]bluetooth.Devic
 	return nil, nil
 }
 
-func (btd *btTestDevice) Disconnect() error {
+func (btd btTestDevice) Disconnect() error {
 	if btd.simulateDisconnectErr {
 		return fmt.Errorf("device disconnect error")
 	}

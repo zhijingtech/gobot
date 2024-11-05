@@ -1,6 +1,51 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/hybridgroup/gobot/compare/v2.3.0...HEAD)
+## [Unreleased](https://github.com/hybridgroup/gobot/compare/v2.4.0...HEAD)
+
+## [v2.4.0](https://github.com/hybridgroup/gobot/compare/v2.3.0...v2.4.0) (2024-11-05)
+
+### Bebop
+
+* fix concurrent map writes ([#1063](https://github.com/hybridgroup/gobot/issues/1063))
+
+### Ble
+
+* add support for functional options, add tests ([#1059](https://github.com/hybridgroup/gobot/issues/1059))
+* introduce in drivers folder ([#1057](https://github.com/hybridgroup/gobot/issues/1057))
+* **client:** add scan timout ([#1051](https://github.com/hybridgroup/gobot/issues/1051))
+* **module:** update tinygo.org/x/bluetooth to v0.10 and adapt code ([#1084](https://github.com/hybridgroup/gobot/issues/1084))
+
+### Build
+
+* **go, deps:** switch to Go 1.22 and update modules, linter v1.61.0 and adapt code ([#1093](https://github.com/hybridgroup/gobot/issues/1093),[#1092](https://github.com/hybridgroup/gobot/issues/1092))
+* **go, deps:** switch to Go 1.20 and update modules ([#1067](https://github.com/hybridgroup/gobot/issues/1067))
+* **linter:** update linter to v1.56.1 and fix issues ([#1068](https://github.com/hybridgroup/gobot/issues/1068))
+
+### Doc
+
+* update links to release or tagged branch ([#1069](https://github.com/hybridgroup/gobot/issues/1069))
+* **core:** prepare for release v2.4.0
+
+### Examples
+
+* fix missing checks of return values ([#1060](https://github.com/hybridgroup/gobot/issues/1060))
+
+### Gobot
+
+* rename Master to Manager ([#1070](https://github.com/hybridgroup/gobot/issues/1070))
+
+### Megapi
+
+* use serialport adaptor and move driver to drivers/serial ([#1062](https://github.com/hybridgroup/gobot/issues/1062))
+
+### Neurosky
+
+* use serialport adaptor and move driver to drivers/serial ([#1061](https://github.com/hybridgroup/gobot/issues/1061))
+
+### Test
+
+* try to stabilize eventer tests ([#1066](https://github.com/hybridgroup/gobot/issues/1066))
+* try to stabilize firmata tests ([#1097](https://github.com/hybridgroup/gobot/issues/1097))
 
 ## [v2.3.0](https://github.com/hybridgroup/gobot/compare/v2.2.0...v2.3.0) (2024-01-06)
 
@@ -1183,7 +1228,7 @@
 
 ### core
 
-* Add Running() methods for Master and Robot and increase test coverage accordingly
+* Add Running() methods for Manager and Robot and increase test coverage accordingly
 
 ### sysfs
 
@@ -1647,9 +1692,9 @@
 ### core
 
 * Refactoring to allow 'Metal' development using Gobot packages
-* Able to run robots without being part of a Master.
+* Able to run robots without being part of a Manager.
 * Now running all work in separate goroutines
-* Rename internal name of Master type
+* Rename internal name of Manager type
 * Refactor events to use channels all the way down.
 * Eliminate potential race conditions from Events and Every functions
 * Add Unsubscribe() to Eventer, now Once() works as expected
@@ -1657,7 +1702,7 @@
 * Ranges over event channels instead of using select
 * No longer return non-standard slices of errors, instead use hashicorp/go-multierror
 * Ensure that all drivers have default names
-* Now both Robot and Master operate using AutoRun as expected
+* Now both Robot and Manager operate using AutoRun as expected
 * Use canonical import domain of gobot.io for all code
 * Use time.Sleep unless waiting for a timeout in a select
 * Uses time.NewTimer() instead of time.After() to be more efficient
@@ -2456,7 +2501,7 @@
 * Replaced ginkgo/gomega with system testing package
 * Refactor gobot/robot/device commands
 * Added Event type
-* Replaced Master type with Gobot type
+* Replaced Manager type with Gobot type
 * Every` and `After` now accept `time.Duration`
 * Removed reflection helper methods
 
@@ -2580,7 +2625,7 @@
 * Finalize on SIGINT
 * Publish function for driver events
 * device test coverage
-* master and robot test coverage
+* manager and robot test coverage
 
 ### Clean
 
@@ -2600,7 +2645,7 @@
 
 ### Refactor
 
-* robot and master
+* robot and manager
 
 ### Remove
 
@@ -2636,8 +2681,8 @@
 * Travis banner to README
 * api commands
 * POST command
-* master example
-* robot master
+* manager example
+* robot manager
 * Sphero example
 * Digispark to list of supported platforms
 * helper functions
@@ -2737,11 +2782,11 @@
 
 ### Rename
 
-* Gobot struct to Master
+* Gobot struct to Manager
 
 ### Set
 
-* GOMAXPROCS property in GobotMaster
+* GOMAXPROCS property in GobotManager
 
 ### Skeleton
 

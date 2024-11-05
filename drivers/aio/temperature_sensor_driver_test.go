@@ -149,7 +149,7 @@ func TestTemperatureSensorWithSensorCyclicRead_PublishesTemperatureInCelsius(t *
 	select {
 	case <-sem:
 	case <-time.After(1 * time.Second):
-		t.Errorf(" Temperature Sensor Event \"Data\" was not published")
+		require.Fail(t, " Temperature Sensor Event \"Data\" was not published")
 	}
 
 	assert.InDelta(t, 31.61532462352477, d.Value(), 0.0)
@@ -177,25 +177,26 @@ func TestTemperatureSensorWithSensorCyclicRead_PublishesError(t *testing.T) {
 	select {
 	case <-sem:
 	case <-time.After(1 * time.Second):
-		t.Errorf(" Temperature Sensor Event \"Error\" was not published")
+		require.Fail(t, " Temperature Sensor Event \"Error\" was not published")
 	}
 }
 
 func TestTemperatureSensorHalt_WithSensorCyclicRead(t *testing.T) {
 	// arrange
 	d := NewTemperatureSensorDriver(newAioTestAdaptor(), "1", WithSensorCyclicRead(10*time.Millisecond))
-	done := make(chan struct{})
 	require.NoError(t, d.Start())
+	errChan := make(chan error, 1)
 	// act & assert
 	go func() {
-		require.NoError(t, d.Halt())
-		close(done)
+		errChan <- d.Halt()
 	}()
+
 	// test that the halt is not blocked by any deadlock with mutex and/or channel
 	select {
-	case <-done:
+	case err := <-errChan:
+		require.NoError(t, err)
 	case <-time.After(100 * time.Millisecond):
-		t.Errorf("Temperature Sensor was not halted")
+		require.Fail(t, "Temperature Sensor was not halted")
 	}
 }
 

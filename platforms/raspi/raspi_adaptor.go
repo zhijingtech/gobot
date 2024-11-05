@@ -48,7 +48,7 @@ type Adaptor struct {
 // Optional parameters:
 //
 //	adaptors.WithGpiodAccess():	use character device gpiod driver instead of sysfs (still used by default)
-//	adaptors.WithSpiGpioAccess(sclk, nss, mosi, miso):	use GPIO's instead of /dev/spidev#.#
+//	adaptors.WithSpiGpioAccess(sclk, ncs, sdo, sdi):	use GPIO's instead of /dev/spidev#.#
 //	adaptors.WithGpiosActiveLow(pin's): invert the pin behavior
 //	adaptors.WithGpiosPullUp/Down(pin's): sets the internal pull resistor
 //	adaptors.WithGpiosOpenDrain/Source(pin's): sets the output behavior
@@ -83,7 +83,7 @@ func NewAdaptor(opts ...interface{}) *Adaptor {
 	return a
 }
 
-// Name returns the Adaptor's name
+// Name returns the adaptors name
 func (a *Adaptor) Name() string {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
@@ -91,7 +91,7 @@ func (a *Adaptor) Name() string {
 	return a.name
 }
 
-// SetName sets the Adaptor's name
+// SetName sets the adaptors name
 func (a *Adaptor) SetName(n string) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()

@@ -24,7 +24,9 @@ Example:
 
 		work := func() {
 			gobot.Every(1*time.Second, func() {
-				led.Toggle()
+				if err := led.Toggle(); err != nil {
+				fmt.Println(err)
+			}
 			})
 		}
 
@@ -34,10 +36,12 @@ Example:
 			work,
 		)
 
-		robot.Start()
+		if err := robot.Start(); err != nil {
+			panic(err)
+		}
 	}
 
 For more information refer to the beaglebone README:
-https://github.com/hybridgroup/gobot/blob/master/platforms/beaglebone/README.md
+https://github.com/hybridgroup/gobot/blob/release/platforms/beaglebone/README.md
 */
 package beaglebone // import "gobot.io/x/gobot/v2/platforms/beaglebone"
